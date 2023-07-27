@@ -1,0 +1,258 @@
+package smtdb;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.format.CellFormatType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.By;
+import org.openqa.selenium.By.ByXPath;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Select;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+
+
+public class smtlogin {
+    WebDriver driver;
+	XSSFWorkbook workbook;
+	XSSFSheet sheet;
+    XSSFCell cell;
+    
+    
+	
+	//@Test(dataProviderClass=csvdataread.class,dataProvider="data")
+    @BeforeTest
+    
+	public  void main(ITestContext context) {
+		
+		System.setProperty("webdriver.chrome.driver", "C:\\Users\\SiShetty\\Downloads\\chromedriver_win32\\chromedriver.exe");
+		//WebDriver driver = new ChromeDriver();
+		this.driver = new ChromeDriver();
+		
+		driver.get("http://smarttestdb.cal.ci.spirentcom.com/stadmin/");
+		
+		WebElement txtbx_username  =
+				driver.findElement(By.id("id_username"));
+		
+		txtbx_username.sendKeys("sishetty");
+		
+		driver.findElement(By.id("id_password")).sendKeys("Welcome_14)^");
+		
+		driver.findElement(By.xpath("//input[@value='Log in' and @type='submit']")).click();
+		
+		String expected_title = "Site administration | Django site admin";
+		String actual_title = driver.getTitle();
+		
+		
+		Assert.assertEquals(expected_title, actual_title);
+		
+		driver.findElement(By.linkText("Test cases")).click();
+		driver.findElement(By.linkText("Advanced filter")).click();
+		
+		WebElement ddown = driver.findElement(By.name("team_owner_con"));
+		Select select = new Select(ddown);
+		select.selectByValue("e");
+		
+		WebElement ddown1 = driver.findElement(By.name("ms_con"));
+		Select select1 = new Select(ddown1);
+		select1.selectByValue("e");
+		
+	}
+		
+		@Test
+		@Parameters({"team_owner_keyword","ms_keyword"})
+		public void ReadWriteData() throws IOException, InterruptedException
+		{
+			
+		FileInputStream file = new FileInputStream("C:\\Users\\SiShetty\\OneDrive - Spirent Communications\\Desktop\\Testdata.xlsx");	
+		 
+	     XSSFWorkbook workbook = new XSSFWorkbook(file);
+	     
+	     XSSFSheet sheet = workbook.getSheet("sheet1");
+	     
+	     
+	     int rowCount = sheet.getLastRowNum();
+	      
+	     for(int i =1;i<=rowCount;i ++)
+	     { 
+	    	 
+	    	 XSSFRow currentRow = sheet.getRow(i);
+	    	 
+	    	 String team_owner = currentRow.getCell(0).getStringCellValue();
+	    	 String mst = currentRow.getCell(1).getStringCellValue();
+	    
+	    driver.findElement(By.name("team_owner_keyword")).sendKeys(team_owner);
+	     driver.findElement(By.name("ms_keyword")).sendKeys(mst);
+	     
+	     
+	     
+	     //Thread.sleep(10000);
+	     
+	     
+	     //driver.findElement(By.name("team_owner_keyword")).sendKeys(Keys.chord(Keys.CONTROL , "a" , Keys.DELETE));
+	     //driver.findElement(By.name("ms_keyword")).sendKeys(Keys.chord(Keys.CONTROL , "a" , Keys.DELETE));
+	     
+	   }
+	     driver.findElement(By.xpath("//input[@type='submit']")).click();
+	     
+	     
+	        //find different states and fetch test case numbers.
+	        WebElement ddown2 = driver.findElement(By.xpath("//*[@id='changelist-filter']/ul[5]/li/select"));
+			Select select2 = new Select(ddown2);
+			select2.selectByVisibleText("awaiting test");
+			
+			String awt = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern4 = Pattern.compile("\\w+ test case");
+			Matcher matcher4 = pattern4.matcher(awt);
+			if (matcher4.find())
+			{
+			    System.out.println("awaiting test - " +matcher4.group());
+			}
+			
+	        WebElement ddown3 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select3 = new Select(ddown3);
+			select3.selectByVisibleText("being fixed");
+			
+			String bf = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern5 = Pattern.compile("\\w+ test case");
+			Matcher matcher5 = pattern5.matcher(bf);
+			if (matcher5.find())
+			{
+			    System.out.println("being fixed - " +matcher5.group());
+			}
+			
+			WebElement ddown4 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select4 = new Select(ddown4);
+			select4.selectByVisibleText("under investigation");
+			
+			String ui = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern6 = Pattern.compile("\\d+ test case");
+			Matcher matcher6 = pattern6.matcher(ui);
+			if (matcher6.find())
+			{
+			    System.out.println("under investigation - " +matcher6.group());
+			}
+			
+			
+			
+			
+			WebElement ddown5 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select5 = new Select(ddown5);
+			select5.selectByVisibleText("new");
+			
+			String ne = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern7 = Pattern.compile("\\w+ test case");
+			Matcher matcher7 = pattern7.matcher(ne);
+			if (matcher7.find())
+			{
+			    System.out.println("new - " +matcher7.group());
+			}
+			
+			WebElement ddown6 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select6 = new Select(ddown6);
+			select6.selectByVisibleText("active");
+			
+		
+			String mydata = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern = Pattern.compile("\\w+ test case");
+			Matcher matcher = pattern.matcher(mydata);
+			if (matcher.find())
+			{
+			    System.out.println("active - " +matcher.group());
+			}
+		
+			
+			WebElement ddown7 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select7 = new Select(ddown7);
+			select7.selectByVisibleText("failing with CR");
+			
+			String mydata1 = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern1 = Pattern.compile("\\w+ test case");
+			Matcher matcher1 = pattern1.matcher(mydata1);
+			if (matcher1.find())
+			{
+			    System.out.println("failing with CR - " +matcher1.group());
+			}
+
+			
+			WebElement ddown8 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select8 = new Select(ddown8);
+			select8.selectByVisibleText("depricated");
+			
+			String mydata2 = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern2 = Pattern.compile("\\w+ test case");
+			Matcher matcher2 = pattern2.matcher(mydata2);
+			if (matcher2.find())
+			{
+			    System.out.println("depricated - " +matcher2.group());
+			}
+			
+			
+			WebElement ddown9 = driver.findElement(By.xpath("//*[@id=\"changelist-filter\"]/ul[5]/li/select"));
+			Select select9 = new Select(ddown9);
+			select9.selectByVisibleText("inactive");
+			
+			String mydata3 = driver.findElement(By.xpath("//p[@class='paginator']")).getText();
+			Pattern pattern3 = Pattern.compile("\\w+ test case");
+			Matcher matcher3 = pattern3.matcher(mydata3);
+			if (matcher3.find())
+			{
+			    System.out.println("inactive - " +matcher3.group());
+			}
+	
+			
+			
+			  //Write to Excel Sheet 
+			File file1 = new File("C:\\Users\\SiShetty\\OneDrive - Spirent Communications\\Desktop\\output.xlsx");
+			XSSFWorkbook wb = new XSSFWorkbook();
+			XSSFSheet sh = wb.createSheet();
+			
+			sh.createRow(0).createCell(0).setCellValue("Results : ");
+            sh.createRow(2).createCell(1).setCellValue("new - " +matcher7.group());
+			sh.createRow(3).createCell(1).setCellValue("awaiting test - " +matcher4.group());
+			sh.createRow(4).createCell(1).setCellValue("being fixed - " +matcher5.group());
+			sh.createRow(5).createCell(1).setCellValue("under investigation - " +matcher6.group());
+			sh.createRow(6).createCell(1).setCellValue("Active - " +matcher.group());
+			sh.createRow(7).createCell(1).setCellValue("failing with CR - " +matcher1.group());
+			sh.createRow(8).createCell(1).setCellValue("depricated - " +matcher2.group());
+			sh.createRow(9).createCell(1).setCellValue("inactive - " +matcher3.group());
+			
+			try {
+				FileOutputStream fos = new FileOutputStream(file1);
+				wb.write(fos);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		
+		
+}
+		
+}
